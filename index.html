@@ -115,31 +115,47 @@ function toggleMenu() {
 </section>
 
 
-   <!-- PROJECTS + foto COMBINED -->
-<section id="projects" class="section fade-in">
+ <section id="projects" class="section fade-in">
     <h2>Daftar Projek & Foto</h2>
+
     <div class="project-cards">
 
         <div class="project-card">
             <img src="foto/WhatsApp Image 2025-11-24 at 08.46.30.jpeg" alt="Robotic">
             <h3>Robotic</h3>
             <p>Projek membuat robot sederhana menggunakan Arduino.</p>
+            <button class="detail-btn" onclick="openModal(
+                'Robotic',
+                'Projek ini membuat robot sederhana berbasis Arduino yang bisa bergerak otomatis. Robot menggunakan sensor ultrasonik untuk mendeteksi rintangan dan menghindarinya. Dari projek ini, saya belajar cara menghubungkan sensor, motor, dan Arduino, serta membuat logika sederhana agar robot bergerak sesuai kondisi di sekitarnya.',
+                'foto/WhatsApp Image 2025-11-24 at 08.46.30.jpeg'
+            )">Lihat Detail</button>
         </div>
 
         <div class="project-card">
             <img src="foto/WhatsApp Image 2025-11-24 at 08.44.48.jpeg" alt="IoT Lamp">
-            <h3>Kontrol Lampu dari HP</h3>
-            <p>Projek IoT untuk menyalakan dan mematikan lampu melalui smartphone.</p>
+            <h3>Kontrol Lampu dari smartphone</h3>
+            <p>Projek IoT untuk menghidupkan dan mematikan lampu via HP.</p>
+            <button class="detail-btn" onclick="openModal(
+                'Kontrol Lampu HP',
+                'Projek ini adalah sistem IoT yang memungkinkan lampu dikontrol menggunakan smartphone. Menggunakan modul WiFi seperti ESP8266, lampu dapat dinyalakan dan dimatikan jarak jauh. Projek ini membantu saya memahami dasar-dasar IoT dan cara menghubungkan perangkat ke internet.',
+                'foto/WhatsApp Image 2025-11-24 at 08.44.48.jpeg'
+            )">Lihat Detail</button>
         </div>
 
         <div class="project-card">
             <img src="foto/WhatsApp Image 2025-11-24 at 08.39.31.jpeg" alt="Ultrasonic Sensor">
             <h3>Mengukur Jarak</h3>
             <p>Projek sensor ultrasonic untuk mengukur jarak.</p>
+            <button class="detail-btn" onclick="openModal(
+                'Sensor Ultrasonik',
+                'Projek ini menggunakan sensor ultrasonik HC-SR04 untuk mengukur jarak benda. Sensor mengirimkan gelombang dan membaca pantulannya untuk mengetahui jarak. Projek ini mengajarkan saya cara membaca data sensor dengan Arduino dan menampilkannya secara real-time.',
+                'foto/WhatsApp Image 2025-11-26 at 09.15.06.jpeg'
+            )">Lihat Detail</button>
         </div>
 
     </div>
 </section>
+
 
 
 <div class="contact-icons">
@@ -178,6 +194,17 @@ function toggleMenu() {
     <p>© 2025 Salsahira Duwi Aprilia — SMK Negeri Pasirian</p>
 </footer>
 
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+
+        <h2 id="modalTitle"></h2>
+        <img id="modalImage" src="" alt="Project Image" style="width:100%;border-radius:10px;margin:10px 0;">
+        <p id="modalDesc"></p>
+    </div>
+</div>
+
+
 
     <!-- SCROLL TO TOP -->
     <button id="topBtn">↑</button>
@@ -185,4 +212,5 @@ function toggleMenu() {
     <script src="script.js"></script>
 </body>
 </html>
+
 
