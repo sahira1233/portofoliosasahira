@@ -283,3 +283,18 @@ nav ul li a:hover{
     float: right;
 }
 
+.close-modal {
+    font-size: 30px;
+    cursor: pointer;
+    color: #ffd700;
+    float: right;
+}
+
+/* =========================== */
+/* FIX MODAL TIDAK MUNCUL di HP*/
+/* =========================== */
+.modal.show {
+    display: flex !important;
+}
+
+
