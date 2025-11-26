@@ -38,25 +38,27 @@ topBtn.addEventListener("click", () => {
 });
 
 // ==========================
-//    MODAL PROJECT DETAIL
+//      MODAL PROJECT FIXED
 // ==========================
 
 function openModal(title, desc, img) {
+    const modal = document.getElementById("projectModal");
+
     document.getElementById("modalTitle").innerText = title;
     document.getElementById("modalDesc").innerText = desc;
     document.getElementById("modalImage").src = img;
 
-    document.getElementById("projectModal").style.display = "flex";
+    modal.classList.add("show"); // FIX TERPENTING
 }
 
 function closeModal() {
-    document.getElementById("projectModal").style.display = "none";
+    document.getElementById("projectModal").classList.remove("show");
 }
 
-// Tutup modal jika klik area hitam
-window.onclick = function(event) {
+// Tutup modal jika klik area gelap
+window.addEventListener("click", function(e) {
     const modal = document.getElementById("projectModal");
-    if (event.target === modal) {
-        modal.style.display = "none";
+    if (e.target === modal) {
+        modal.classList.remove("show");
     }
-}
+});
