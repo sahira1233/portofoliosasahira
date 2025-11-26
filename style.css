@@ -12,15 +12,50 @@ body {
     text-align: center;
 }
 
-/* NAVBAR */
-header{
-    width:100%;position:fixed;top:0;left:0;
-    background:rgba(0,0,0,0.7);
-    backdrop-filter:blur(10px);
-    padding:15px 10%;
-    z-index:10;
-    transition:.3s;
+/* NAVBAR + FIX HP */
+header {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    padding: 15px 10%;
+    z-index: 10;
+    transition: .3s;
 }
+
+/* AGAR KONTEN TIDAK TERUTUP NAVBAR */
+body {
+    padding-top: 80px; /* ruang untuk navbar di desktop */
+}
+
+/* NAVBAR RESPONSIVE & PERBAIKAN HP */
+@media (max-width: 768px) {
+    body {
+        padding-top: 110px; /* navbar lebih tinggi di HP */
+    }
+
+    nav ul {
+        position: absolute;
+        top: 70px;
+        right: 10%;
+        flex-direction: column;
+        background: rgba(0,0,0,0.9);
+        padding: 20px;
+        border-radius: 12px;
+        display: none;
+    }
+
+    nav ul.show {
+        display: flex;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+}
+
 header.scrolled{
     background:rgba(20,20,20,0.95);
     box-shadow:0 4px 20px rgba(255,215,0,0.2);
