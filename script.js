@@ -37,10 +37,6 @@ topBtn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// ==========================
-//      MODAL PROJECT FIXED
-// ==========================
-
 function openModal(title, desc, img) {
     const modal = document.getElementById("projectModal");
 
@@ -48,17 +44,34 @@ function openModal(title, desc, img) {
     document.getElementById("modalDesc").innerText = desc;
     document.getElementById("modalImage").src = img;
 
-    modal.classList.add("show"); // FIX TERPENTING
+    modal.classList.add("show");
 }
 
 function closeModal() {
     document.getElementById("projectModal").classList.remove("show");
 }
 
-// Tutup modal jika klik area gelap
 window.addEventListener("click", function(e) {
     const modal = document.getElementById("projectModal");
     if (e.target === modal) {
         modal.classList.remove("show");
     }
 });
+
+window.addEventListener("click", function(e) {
+    const modal = document.getElementById("projectModal");
+    if (e.target === modal) {
+        modal.classList.remove("show");
+    }
+});
+
+// QUIZ MODAL
+function openQuizModal() {
+    document.getElementById("quizModal").classList.add("show");
+}
+
+function closeQuizModal() {
+    document.getElementById("quizModal").classList.remove("show");
+}
+
+
