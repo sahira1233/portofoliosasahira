@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Edu Upgrade</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+body {
+    background: #000;
+    color: #ffd700;
+    font-family: Arial, sans-serif;
+    padding-top: 120px;
+}
+
+.quiz-box {
+    max-width: 700px;
+    margin: auto;
+    background: rgba(255,215,0,0.08);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(255,215,0,0.3);
+}
+
+/* TITLE */
+h1 {
+    text-align: center;
+    text-shadow: 0 0 10px #ffd700;
+}
+
+/* PROGRESS BAR */
+.progress-container {
+    margin-top: 15px;
+    background: #222;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #ffd700;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #ffd700;
+    transition: 0.4s;
+}
+
+/* TIMER */
+#timerBox {
+    margin-top: 15px;
+    font-size: 1.2em;
+}
+
+/* QUESTION */
+.question {
+    margin-top: 25px;
+    font-size: 1.3em;
+}
+
+/* OPTIONS */
+.option {
+    background: rgba(255,215,0,0.1);
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.option:hover {
+    background: #ffd700;
+    color: #000;
+}
+
+/* TRUE/FALSE ANIMATION */
+.correct {
+    background: #28a745 !important;
+    color: #fff !important;
+}
+
+.wrong {
+    background: #dc3545 !important;
+    color: #fff !important;
+}
+
+/* NEXT BTN */
+button {
+    background: #d4af37;
+    color: black;
+    padding: 10px 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #ffd700;
+    box-shadow: 0 0 15px #ffd700;
+}
+
+.score-box {
+    text-align: center;
+    font-size: 1.6em;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="quiz-box">
+    <h1>Quiz Edu Upgrade</h1>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="timerBox">Time: <span id="timer">10</span>s</div>
+
+    <div id="quizArea"></div>
+
+    <button id="nextBtn" onclick="nextQuestion()" style="display:none;">Soal Berikutnya</button>
+</div>
+
+<script>
+// =============================
+// SOAL QUIZ (Math + English Indonesia)
+// =============================
+let questions = [
+
+    // MATEMATIKA KELAS 11
+    {
+        q: "1. Berapakah hasil dari 12 × 3 − 6?",
+        options: ["36", "30", "27"],
+        answer: 1
+    },
+    {
+        q: "2. Jika A = [2 1; 0 3], berapakah determinannya?",
+        options: ["6", "3", "2"],
+        answer: 0
+    },
+    {
+        q: "3. Nilai dari akar kuadrat 16 adalah?",
+        options: ["4", "3", "8"],
+        answer: 0
+    },
+    {
+        q: "4. Jika 2x + 6 = 18, maka nilai x adalah?",
+        options: ["6", "5", "8"],
+        answer: 0
+    },
+    {
+        q: "5. Berapakah 15% dari 200?",
+        options: ["35", "30", "25"],
+        answer: 1
+    },
+
+    // BAHASA INGGRIS — versi materi kelas 11 (DI-INDONESIAKAN)
+    {
+        q: "6. Apa sinonim dari kata 'important' (penting)?",
+        options: ["necessary (perlu)", "tiny (kecil)", "lazy (malas)"],
+        answer: 0
+    },
+    {
+        q: "7. Pilih kalimat yang benar: She ____ to school every day.",
+        options: ["go", "goes", "going"],
+        answer: 1
+    },
+    {
+        q: "8. Apa antonim dari kata 'strong' (kuat)?",
+        options: ["weak (lemah)", "brave (berani)", "sharp (tajam)"],
+        answer: 0
+    },
+    {
+        q: "9. Bentuk lampau (past tense) dari 'write' adalah...",
+        options: ["writed", "wrote", "written"],
+        answer: 1
+    },
+    {
+        q: "10. Arti dari 'They are eating' adalah...",
+        options: ["Mereka sedang makan", "Mereka tidur", "Mereka akan makan"],
+        answer: 0
+    }
+];
+
+
+// =============================
+// SHUFFLE SOAL
+// =============================
+questions = questions.sort(() => Math.random() - 0.5);
+
+let current = 0;
+let score = 0;
+let timer = 10;
+let countdown;
+
+const quizArea = document.getElementById("quizArea");
+const nextBtn = document.getElementById("nextBtn");
+const progressBar = document.getElementById("progressBar");
+const timerBox = document.getElementById("timer");
+
+// =============================
+// LOAD QUESTION
+// =============================
+function loadQuestion() {
+    nextBtn.style.display = "none";
+    const q = questions[current];
+
+    quizArea.innerHTML = `
+        <div class="question">${q.q}</div>
+        ${q.options.map((opt, i) =>
+            `<div class='option' onclick='checkAnswer(${i}, this)'>${opt}</div>`
+        ).join("")}
+    `;
+
+    updateProgress();
+    resetTimer();
+}
+
+// =============================
+// TIMER SYSTEM
+// =============================
+function resetTimer() {
+    clearInterval(countdown);
+    timer = 10;
+    timerBox.innerText = timer;
+    countdown = setInterval(() => {
+        timer--;
+        timerBox.innerText = timer;
+        if (timer <= 0) {
+            clearInterval(countdown);
+            autoWrong();
+        }
+    }, 1000);
+}
+
+function autoWrong() {
+    quizArea.innerHTML += "<p style='color:#dc3545;margin-top:10px;'>Waktu habis ❌</p>";
+    nextBtn.style.display = "block";
+}
+
+// =============================
+// CHECK ANSWER
+// =============================
+function checkAnswer(i, element) {
+    clearInterval(countdown);
+
+    const q = questions[current];
+    const options = document.querySelectorAll(".option");
+
+    if (i === q.answer) {
+        element.classList.add("correct");
+        score++;
+    } else {
+        element.classList.add("wrong");
+        options[q.answer].classList.add("correct");
+    }
+
+    options.forEach(opt => opt.style.pointerEvents = "none");
+
+    nextBtn.style.display = "block";
+}
+
+// =============================
+// NEXT QUESTION
+// =============================
+function nextQuestion() {
+    current++;
+    if (current < questions.length) {
+        loadQuestion();
+    } else {
+        showScore();
+    }
+}
+
+// =============================
+// SCORE RESULT
+// =============================
+function showScore() {
+    clearInterval(countdown);
+
+    let message = "";
+    if (score >= 8) message = "🎉 Excellent!";
+    else if (score >= 5) message = "👍 Good Job!";
+    else message = "✨ Keep Practicing!";
+
+    quizArea.innerHTML = `
+        <div class="score-box">
+            Nilai kamu: <b>${score}/${questions.length}</b><br>
+            ${message}
+        </div>
+        <button onclick="restart()">Main Lagi</button>
+    `;
+}
+
+// =============================
+// PROGRESS BAR
+// =============================
+function updateProgress() {
+    let progress = ((current + 1) / questions.length) * 100;
+    progressBar.style.width = progress + "%";
+}
+
+// =============================
+// RESTART GAME
+// =============================
+function restart() {
+    current = 0;
+    score = 0;
+    questions = questions.sort(() => Math.random() - 0.5);
+    loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
