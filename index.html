@@ -30,8 +30,7 @@ function toggleMenu() {
             <li><a href="#about">Tentang</a></li>
             <li><a href="#skills">Skills</a></li>
             <li><a href="#projects">Projek</a></li>
-            <li><a href="#gallery">Foto</a></li>
-            <li><a href="#contact">Kontak</a></li>
+          <li><a href="#contact">Kontak</a></li>
         </ul>
     </nav>
 </header>
@@ -116,12 +115,17 @@ function toggleMenu() {
 
         <p>JavaScript <span>60%</span></p>
         <div class="bar"><div class="fill" style="width: 60%;"></div></div>
+
+        <p>Arduino <span>85%</span></p>
+        <div class="bar"><div class="fill" style="width: 85%;"></div></div>
     </div>
 </section>
 
 <!-- PROJECTS -->
 <section id="projects" class="section fade-in">
     <h2>Daftar Projek & Foto</h2>
+
+    
 
     <div class="project-cards">
 
@@ -163,6 +167,18 @@ function toggleMenu() {
                 'foto/WhatsApp Image 2025-11-24 at 08.39.31.jpeg'
             )">Lihat Detail</button>
         </div>
+
+            <!-- PROJECT 4 – QUIZ EDU -->
+<div class="project-card">
+    <img src="foto/download (1).jfif" alt="Quiz Edu" style="height:160px; object-fit:cover;">
+    <h3>Quiz Edu</h3>
+    <p>Game Latihan Matematika & Bahasa Inggris Kelas 11.</p>
+
+    <button class="detail-btn" onclick="openQuizModal()">Mainkan Quiz</button>
+</div>
+
+    </div>
+
 
     </div>
 </section>
@@ -215,6 +231,20 @@ function toggleMenu() {
     </div>
 </div>
 
+<!-- QUIZ MODAL (BENAR) -->
+<div class="modal" id="quizModal">
+    <div class="modal-content" style="max-width:800px;">
+        <span class="close-modal" onclick="closeQuizModal()">&times;</span>
+
+        <h2 style="margin-bottom:15px;">Quiz Edu</h2>
+
+        <iframe src="game-quiz.html"
+                width="100%"
+                height="700px"
+                style="border:none; border-radius:12px;">
+        </iframe>
+    </div>
+</div>
 
 <!-- SCROLL TO TOP BUTTON -->
 <button id="topBtn">↑</button>
