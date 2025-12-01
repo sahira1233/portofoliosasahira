@@ -283,18 +283,15 @@ nav ul li a:hover{
     float: right;
 }
 
-.close-modal {
-    font-size: 30px;
-    cursor: pointer;
-    color: #ffd700;
-    float: right;
-}
-
-/* =========================== */
-/* FIX MODAL TIDAK MUNCUL di HP*/
-/* =========================== */
 .modal.show {
     display: flex !important;
 }
 
-
+/* =========================== */
+/* TEXT JUSTIFY UNTUK BAGIAN TENTANG SAYA */
+/* =========================== */
+.bio-info p {
+    text-align: justify;
+    text-justify: inter-word;
+    line-height: 1.7;
+}
