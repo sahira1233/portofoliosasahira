@@ -3,193 +3,323 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Space Dodger — Game dengan Peringkat</title>
+  <title>Space Dodger — Game untuk Website</title>
   <style>
     :root{ --bg:#0b1020; --panel:#0f1724; --accent:#ff6b6b; --muted:#9aa4b2 }
-    html,body{height:100%;margin:0;font-family:system-ui}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
     body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#071226);color:#fff}
-    .wrap{width:100%;max-width:900px;padding:20px}
-    .card{background:rgba(255,255,255,0.03);border-radius:12px;padding:14px}
+    .wrap{width:100%;max-width:900px;padding:20px;box-sizing:border-box}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
     header{display:flex;align-items:center;gap:12px}
     header h1{font-size:20px;margin:0}
     .meta{color:var(--muted);font-size:13px}
-    canvas{width:100%;height:60vh;background:#020612;border-radius:10px}
-    .controls{display:flex;gap:8px;margin-top:10px}
-    .btn{padding:8px 12px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer}
-    .btn.primary{background:var(--accent)}
-
-    .mobile-controls{display:flex;gap:6px;margin-top:10px}
-    .touchbtn{flex:1;padding:14px;border-radius:8px;background:#333;text-align:center}
-
-    .leaderboard{
-      margin-top:12px;
-      padding:10px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.05);
-      font-size:13px;
+    #gameCanvas{display:block;width:100%;height:60vh;max-height:640px;border-radius:8px;background:radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.02), transparent 10%), linear-gradient(180deg,#081127,#020612);box-shadow:inset 0 0 40px rgba(255,255,255,0.02)}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:#fff;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),#ff9a76);border:none}
+    .hud{display:flex;gap:12px;margin-left:auto;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+    .mobile-controls{display:none;margin-top:10px;gap:6px}
+    .touchbtn{flex:1;padding:12px;border-radius:8px;background:rgba(255,255,255,0.03);text-align:center}
+    @media (max-width:600px){
+      #gameCanvas{height:55vh}
+      .mobile-controls{display:flex}
     }
-    .leaderboard h3{
-      margin:0 0 6px;
-      font-size:14px;
-      color:#ffd700;
-    }
+    /* simple decorative stars */
+    .stars{position:absolute;inset:0;pointer-events:none}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <header>
-      <h1>🚀 Space Dodger</h1>
-      <div class="meta">Hindari meteor & raih skor tertinggi!</div>
-      <div style="margin-left:auto">
-        Skor: <span id="score">0</span> | High: <span id="best">0</span>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <h1>Space Dodger</h1>
+        <div class="meta">Hindari meteor, kumpulkan skor, dan kalahkan highscore!</div>
+        <div class="hud">
+          <div class="small">Skor: <span id="score">0</span></div>
+          <div class="small">High: <span id="best">0</span></div>
+        </div>
+      </header>
+
+      <canvas id="gameCanvas" width="900" height="600" aria-label="Permainan Space Dodger — kendalikan pesawat agar tidak tertabrak meteor"></canvas>
+
+      <div class="controls">
+        <button id="startBtn" class="btn primary">Mulai Game</button>
+        <button id="pauseBtn" class="btn">Pause</button>
+        <button id="restartBtn" class="btn">Restart</button>
+        <div style="margin-left:auto;color:var(--muted);font-size:13px">Gunakan panah kiri/kanan atau sentuh layar</div>
       </div>
-    </header>
 
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+      <div class="mobile-controls">
+        <div id="leftTouch" class="touchbtn">◀</div>
+        <div id="rightTouch" class="touchbtn">▶</div>
+      </div>
 
-    <div class="controls">
-      <button class="btn primary" id="startBtn">Mulai</button>
-      <button class="btn" id="pauseBtn">Pause</button>
-      <button class="btn" id="restartBtn">Restart</button>
-    </div>
-
-    <div class="mobile-controls">
-      <div id="leftTouch" class="touchbtn">◀</div>
-      <div id="rightTouch" class="touchbtn">▶</div>
-    </div>
-
-    <div class="leaderboard">
-      <h3>🏆 Peringkat Top 5</h3>
-      <ol id="rankList"></ol>
+  
     </div>
   </div>
-</div>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  <script>
+  // -------------------------------
+  // Space Dodger — single-file HTML
+  // Author: ChatGPT
+  // Features:
+  // - keyboard + touch controls
+  // - responsive canvas
+  // - obstacles spawn with increasing difficulty
+  // - score, highscore stored in localStorage
+  // - pause, restart
+  // -------------------------------
 
-let player = { x: 0.5, y: 0.85, w: 40, h: 20, vx: 0 };
-let obstacles = [];
-let lastTime = 0;
-let spawnTimer = 0;
-let spawnInterval = 900;
-let score = 0;
-let best = parseInt(localStorage.getItem('sd_best') || 0);
-let rankings = JSON.parse(localStorage.getItem('sd_ranking') || "[]");
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width, H = canvas.height;
 
-let running = false;
-let paused = false;
+  function resize() {
+    // keep internal resolution fixed but scale to CSS size for crispness
+    const ratio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(300, Math.floor(rect.width * ratio));
+    canvas.height = Math.max(200, Math.floor(rect.height * ratio));
+    W = canvas.width; H = canvas.height;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(ratio, ratio);
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-const scoreEl = document.getElementById("score");
-const bestEl = document.getElementById("best");
-const rankList = document.getElementById("rankList");
+  // Game state
+  let player = { x: 0.5, y: 0.85, w: 48, h: 28, vx: 0 };
+  let obstacles = [];
+  let lastTime = 0;
+  let spawnTimer = 0;
+  let spawnInterval = 900; // ms
+  let score = 0;
+  let best = parseInt(localStorage.getItem('sd_best')||'0',10);
+  let running = false;
+  let paused = false;
+  let speedMultiplier = 1;
 
-bestEl.textContent = best;
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  bestEl.textContent = best;
 
-function resetGame(){
-  obstacles=[];
-  score=0;
-  spawnInterval=900;
-  player.x=0.5;
-}
-
-function startGame(){
-  resetGame();
-  running=true;
-  paused=false;
-  lastTime=performance.now();
-  requestAnimationFrame(loop);
-}
-
-function updateRanking(finalScore){
-  rankings.push(finalScore);
-  rankings.sort((a,b)=>b-a);
-  rankings=rankings.slice(0,5);
-  localStorage.setItem("sd_ranking",JSON.stringify(rankings));
-  renderRanking();
-}
-
-function renderRanking(){
-  rankList.innerHTML="";
-  rankings.forEach(s=>{
-    const li=document.createElement("li");
-    li.textContent="Skor "+s;
-    rankList.appendChild(li);
-  });
-}
-
-const keys={};
-window.addEventListener("keydown",e=>keys[e.key]=true);
-window.addEventListener("keyup",e=>keys[e.key]=false);
-
-function spawnObstacle(){
-  obstacles.push({
-    x:Math.random()*canvas.width,
-    y:-20,
-    r:10+Math.random()*20,
-    vy:100+score*0.3
-  });
-}
-
-function loop(t){
-  if(!running) return;
-  const dt=t-lastTime;
-  lastTime=t;
-
-  if(!paused){
-    let dir=0;
-    if(keys.ArrowLeft) dir=-1;
-    if(keys.ArrowRight) dir=1;
-    player.x+=dir*dt*0.3;
-    player.x=Math.max(0,Math.min(canvas.width,player.x));
-
-    spawnTimer+=dt;
-    if(spawnTimer>spawnInterval){
-      spawnObstacle();
-      spawnTimer=0;
-    }
-
-    obstacles.forEach(o=>{
-      o.y+=o.vy*dt/1000;
-      if(Math.abs(o.x-player.x)<20 && Math.abs(o.y-player.y*canvas.height)<20){
-        running=false;
-        const finalScore=Math.floor(score);
-        if(finalScore>best){
-          best=finalScore;
-          localStorage.setItem("sd_best",best);
-        }
-        updateRanking(finalScore);
-      }
-    });
-
-    score+=dt*0.03;
-    scoreEl.textContent=Math.floor(score);
-    bestEl.textContent=best;
+  function resetGame() {
+    obstacles = [];
+    score = 0;
+    spawnInterval = 900;
+    speedMultiplier = 1;
+    player.x = 0.5;
+    player.vx = 0;
+    updateHUD();
   }
 
-  draw();
-  requestAnimationFrame(loop);
-}
+  function startGame() {
+    resetGame();
+    running = true; paused = false;
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
 
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="cyan";
-  ctx.fillRect(player.x,player.y*canvas.height,player.w,player.h);
-  ctx.fillStyle="orange";
-  obstacles.forEach(o=>{
-    ctx.beginPath();
-    ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
-    ctx.fill();
-  });
-}
+  function pauseGame() { paused = !paused; }
 
-document.getElementById("startBtn").onclick=startGame;
-document.getElementById("restartBtn").onclick=startGame;
-document.getElementById("pauseBtn").onclick=()=>paused=!paused;
+  function restartGame() { startGame(); }
 
-renderRanking();
-</script>
+  function updateHUD(){ scoreEl.textContent = Math.floor(score); bestEl.textContent = best; }
+
+  // Input
+  const keys = {};
+  window.addEventListener('keydown', e=>{ keys[e.key]=true; if(e.key===' '&& !running) startGame(); });
+  window.addEventListener('keyup', e=>{ keys[e.key]=false });
+
+  // touch controls
+  let touchLeft=false,touchRight=false;
+  document.getElementById('leftTouch').addEventListener('touchstart',e=>{ e.preventDefault(); touchLeft=true });
+  document.getElementById('leftTouch').addEventListener('touchend',e=>{ e.preventDefault(); touchLeft=false });
+  document.getElementById('rightTouch').addEventListener('touchstart',e=>{ e.preventDefault(); touchRight=true });
+  document.getElementById('rightTouch').addEventListener('touchend',e=>{ e.preventDefault(); touchRight=false });
+
+  // mouse/touch screen split: touch left/right to move
+  canvas.addEventListener('touchstart', e=>{
+    const t = e.touches[0];
+    const r = canvas.getBoundingClientRect();
+    const x = t.clientX - r.left;
+    if(x < r.width/2) touchLeft = true; else touchRight = true;
+  }, {passive:false});
+  canvas.addEventListener('touchend', e=>{ touchLeft = touchRight = false }, {passive:false});
+
+  // obstacles: {x,y,radius,vx,vy,type}
+  function spawnObstacle(){
+    const randX = Math.random() * (canvas.getBoundingClientRect().width - 40) + 20;
+    const size = 14 + Math.random()*36;
+    const speedY = 60 + Math.random()*90 + score*0.08;
+    obstacles.push({ x: randX, y: -size, r: size/2, vy: speedY, vx: (Math.random()-0.5)*30 });
+  }
+
+  function worldToCanvasX(normX){
+    const r = canvas.getBoundingClientRect();
+    return normX * r.width;
+  }
+
+  function loop(t){
+    if(!running) return;
+    const dt = Math.min(40, t - lastTime);
+    lastTime = t;
+    if(paused){ draw(); requestAnimationFrame(loop); return; }
+
+    // input
+    const moveSpeed = 240;
+    let dir = 0;
+    if(keys.ArrowLeft || keys.a || touchLeft) dir -= 1;
+    if(keys.ArrowRight || keys.d || touchRight) dir += 1;
+    player.vx = dir * moveSpeed;
+
+    // update player
+    const rect = canvas.getBoundingClientRect();
+    const px = player.x * rect.width + player.vx * (dt/1000);
+    player.x = Math.max(0, Math.min(1, px / rect.width));
+
+    // spawn
+    spawnTimer += dt;
+    if(spawnTimer > spawnInterval){ spawnObstacle(); spawnTimer = 0; spawnInterval = Math.max(350, spawnInterval - 8); }
+
+    // update obstacles
+    for(let i=obstacles.length-1;i>=0;i--){
+      const ob = obstacles[i];
+      ob.y += ob.vy * (dt/1000);
+      ob.x += ob.vx * (dt/1000);
+      // remove offscreen
+      if(ob.y - ob.r > rect.height + 50) obstacles.splice(i,1);
+    }
+
+    // collision
+    const playerRect = {
+      x: player.x * rect.width - player.w/2,
+      y: player.y * rect.height - player.h/2,
+      w: player.w, h: player.h
+    };
+    for(const ob of obstacles){
+      // circle-rect collision
+      const cx = ob.x;
+      const cy = ob.y;
+      const rx = playerRect.x;
+      const ry = playerRect.y;
+      const rw = playerRect.w;
+      const rh = playerRect.h;
+      const nearestX = Math.max(rx, Math.min(cx, rx+rw));
+      const nearestY = Math.max(ry, Math.min(cy, ry+rh));
+      const dx = cx - nearestX;
+      const dy = cy - nearestY;
+      if((dx*dx + dy*dy) < (ob.r*ob.r)){
+        // hit!
+        running = false;
+        if(Math.floor(score) > best){ best = Math.floor(score); localStorage.setItem('sd_best', best); }
+        updateHUD();
+        showGameOver();
+        return;
+      }
+    }
+
+    // score update
+    score += dt*0.025 * speedMultiplier;
+    if(Math.floor(score) % 50 === 0) speedMultiplier = 1 + Math.min(2, score/250);
+    updateHUD();
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const rect = canvas.getBoundingClientRect();
+    const cw = rect.width; const ch = rect.height;
+    // clear
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // background stars
+    drawStars(cw,ch);
+
+    // draw player (simple spaceship)
+    const px = player.x * cw;
+    const py = player.y * ch;
+    drawShip(px,py);
+
+    // draw obstacles
+    for(const ob of obstacles){
+      drawMeteor(ob.x, ob.y, ob.r);
+    }
+
+    // overlay UI when paused or stopped
+    if(!running){
+      ctx.save();
+      ctx.fillStyle = 'rgba(2,6,11,0.6)';
+      ctx.fillRect(0,0,cw,ch);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign='center';
+      ctx.font = '28px system-ui';
+      ctx.fillText('Game Over', cw/2, ch/2 - 12);
+      ctx.font='16px system-ui';
+      ctx.fillText('Tekan "Mulai Game" atau spasi untuk bermain lagi', cw/2, ch/2 + 18);
+      ctx.restore();
+    }
+  }
+
+  function drawShip(x,y){
+    const rect = canvas.getBoundingClientRect();
+    const cw = rect.width; const ch = rect.height;
+    ctx.save();
+    ctx.translate(x,y);
+    // body
+    ctx.fillStyle = '#7ee7ff';
+    ctx.beginPath(); ctx.ellipse(0,0,player.w/2,player.h/2,0,0,Math.PI*2); ctx.fill();
+    // cockpit
+    ctx.fillStyle = '#083b4f'; ctx.beginPath(); ctx.ellipse(6,-2,10,6,0,0,Math.PI*2); ctx.fill();
+    // flames when moving
+    if(player.vx !== 0){ ctx.fillStyle = 'rgba(255,140,60,0.8)'; ctx.beginPath(); ctx.moveTo(-player.w/2,0); ctx.lineTo(-player.w/2 - 8, -6); ctx.lineTo(-player.w/2 - 8, 6); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+  }
+
+  function drawMeteor(x,y,r){
+    ctx.save();
+    ctx.beginPath(); ctx.fillStyle='#9b6b3a'; ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(255,150,80,0.6)';
+    ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    // craters
+    ctx.fillStyle='rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.arc(x - r*0.25, y - r*0.25, r*0.25, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStars(w,h){
+    // simple random starfield that is stable per frame
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for(let i=0;i<60;i++){
+      const sx = (i*47)%w;
+      const sy = (i*73)%h;
+      ctx.fillRect(sx, sy, 1,1);
+    }
+    ctx.restore();
+  }
+
+  function showGameOver(){
+    // draw final frame then overlay
+    draw();
+    // small modal handled by draw() overlay
+  }
+
+  // buttons
+  document.getElementById('startBtn').addEventListener('click', ()=>{ startGame(); });
+  document.getElementById('pauseBtn').addEventListener('click', ()=>{ pauseGame(); document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause'; });
+  document.getElementById('restartBtn').addEventListener('click', ()=>{ restartGame(); });
+
+  // initial draw and instructions
+  (function init(){
+    // place player in center
+    player.x = 0.5; player.y = 0.85; player.w = 48; player.h = 26;
+    updateHUD();
+    // initial decorative draw
+    running = false;
+    paused = false;
+    draw();
+  })();
+  </script>
 </body>
 </html>
